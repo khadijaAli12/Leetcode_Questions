@@ -1,0 +1,115 @@
+//**********************************************
+// PROBLEM: Max Alternating Sum
+// LeetCode #1911
+// Goal: Choose elements to maximize alternating (+, -, +, -, ...) sum
+//**********************************************
+
+/*
+--------------------------------------------------
+PURE RECURSION (Will TLE for large n)
+--------------------------------------------------
+- Try all possibilities: take or skip current element.
+- `flag = true` → add element (even position in sequence)
+- `flag = false` → subtract element (odd position in sequence)
+- Time: O(2^n) → exponential, will TLE for n > 30
+*/
+class Solution_Recursion {
+public:
+    long long solve(vector<int> &nums, int i, bool flag) {
+        if (i >= nums.size()) return 0;
+        long long skip = solve(nums, i+1, flag);
+        long long val = nums[i];
+        if (flag == false) val = -val;
+        long long take = solve(nums, i+1, !flag) + val;
+        return max(skip, take);
+    }
+    long long maxAlternatingSum(vector<int>& nums) {
+        return solve(nums, 0, true);
+    }
+};
+
+/*
+--------------------------------------------------
+RECURSION + MEMOIZATION (Top-down DP)
+--------------------------------------------------
+- Store results in dp[i][flag] to avoid recomputation.
+- `t[i][0]` = best sum from index i if next op is addition.
+- `t[i][1]` = best sum from index i if next op is subtraction.
+- Time: O(n*2), Space: O(n*2)
+*/
+class Solution_Memo {
+public:
+    long long t[100001][2]; 
+    long long solve(vector<int> &nums, int i, bool flag) {
+        if (i >= nums.size()) return 0;
+        if (t[i][flag] != -1) return t[i][flag];
+        long long skip = solve(nums, i+1, flag);
+        long long val = nums[i];
+        if (flag == false) val = -val;
+        long long take = solve(nums, i+1, !flag) + val;
+        return t[i][flag] = max(skip, take);
+    }
+    long long maxAlternatingSum(vector<int>& nums) {
+        memset(t, -1, sizeof(t));
+        return solve(nums, 0, true);
+    }
+};
+
+/*
+--------------------------------------------------
+BOTTOM-UP DP (Iterative Table)
+--------------------------------------------------
+- t[i][0] → best result using first i elements, next op = addition (even position).
+- t[i][1] → best result using first i elements, next op = subtraction (odd position).
+- Transition:
+    even = max(prevOdd - num, prevEven)
+    odd = max(prevEven + num, prevOdd)
+- Time: O(n), Space: O(n*2)
+*/
+class Solution_BottomUp {
+public:
+    long long maxAlternatingSum(vector<int>& nums) {
+        int n = nums.size();
+        vector<vector<long long>> t(n+1, vector<long long>(2, 0));
+        for (int i = 1; i <= n; i++) {
+            t[i][0] = max(t[i-1][1] - nums[i-1], t[i-1][0]); // even
+            t[i][1] = max(t[i-1][0] + nums[i-1], t[i-1][1]); // odd
+        }
+        return max(t[n][0], t[n][1]);
+    }
+};
+
+/*
+--------------------------------------------------
+OPTIMIZED O(1) SPACE VERSION (Best for LeetCode)
+--------------------------------------------------
+- Only previous state needed → use two variables instead of full table.
+- even = best sum if next op = addition
+- odd = best sum if next op = subtraction
+- Time: O(n), Space: O(1)
+*/
+class Solution {
+public:
+    long long maxAlternatingSum(vector<int>& nums) {
+        long long even = 0, odd = 0;
+        for (auto num : nums) {
+            long long temp_even = max(odd - num, even);
+            long long temp_odd = max(even + num, odd);
+            even = temp_even;
+            odd = temp_odd;
+        }
+        return max(even, odd);
+    }
+};
+
+/*
+--------------------------------------------------
+NOTES:
+--------------------------------------------------
+1. Pure recursion → Only for learning, will TLE.
+2. Memoization → Good for understanding recursion + DP link.
+3. Bottom-up table → Easy to debug, O(n) space.
+4. Optimized O(1) space → Fastest, least memory, best for contest/LeetCode.
+5. Avoid 'int t[n+1][2]' with runtime n → not standard C++.
+   Use vector<array<long long, 2>> or vector<vector<long long>>.
+*/
