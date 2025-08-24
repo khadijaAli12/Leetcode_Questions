@@ -1,24 +1,46 @@
+// recursion and memo:
+// class Solution {
+// public:
+//     vector<vector<int>> t;
+//     int solve(vector<int>& nums, int n, int i, int p) {
+//         if (i >= n)
+//             return 0; // base case
+//         if(t[i][p+1]!=-1) return t[i][p+1];
+//         int take = 0, skip = 0;
+//         // take:
+//         if (p == -1 || nums[p] < nums[i])
+//             take = 1 + solve(nums, n, i + 1, i);
+
+//         // skip:
+//         skip = solve(nums, n, i + 1, p);
+//         return t[i][p+1] = max(take, skip);
+//     }
+//     int lengthOfLIS(vector<int>& nums) {
+//         int n = nums.size();
+//         // memset(t,-1,sizeof(t));
+//         t.assign(n,vector<int>(n+1,-1));
+//         int prev = -1;
+//         return solve(nums, n, 0, prev);
+//     }
+// };
+// with BOTTOM UP
 class Solution {
 public:
-    vector<vector<int>> t;
-    int solve(vector<int>& nums, int n, int i, int p) {
-        if (i >= n)
-            return 0; // base case
-        if(t[i][p+1]!=-1) return t[i][p+1];
-        int take = 0, skip = 0;
-        // take:
-        if (p == -1 || nums[p] < nums[i])
-            take = 1 + solve(nums, n, i + 1, i);
-
-        // skip:
-        skip = solve(nums, n, i + 1, p);
-        return t[i][p+1] = max(take, skip);
-    }
     int lengthOfLIS(vector<int>& nums) {
-        int n = nums.size();
-        // memset(t,-1,sizeof(t));
-        t.assign(n,vector<int>(n+1,-1));
-        int prev = -1;
-        return solve(nums, n, 0, prev);
+     int n= nums.size();
+     int maxLIS=1; // kyun k atleast har element khud ko hi sequence hai 
+     vector<int> t(n,1);
+     // t[i]=LIS ending at index i
+    for(int i=0;i<n;i++){
+        for(int j=0;j<i;j++){
+            if(nums[i]>nums[j]){
+               t[i] = max(t[i],t[j]+1);
+               maxLIS=max(maxLIS,t[i]);
+            }
+        }
+    }
+    // auto it = max_element(t.begin(),t.end());
+    // return *it;
+    return maxLIS;
     }
 };
